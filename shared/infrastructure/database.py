@@ -8,13 +8,10 @@ from peewee import SqliteDatabase
 # Initialize the database connection
 db = SqliteDatabase('smart_parking.db')
 
-def init_db() -> None:
-    """
-    Initialize the database connection. It also creates the necessary tables if they do not exist.
-    """
-    db.connect()
-    """ 
-    Create tables if they do not exist.
-    """
 
-    db.create_tables([], safe=True)  # Replace with actual model classes when defined
+def init_db() -> None:
+    if db.is_closed():
+        db.connect()
+    from parking_spot.infrastructure.models import ParkingSpot
+    from iam.infrastructure.models import Device
+    db.create_tables([ParkingSpot, Device], safe=True)

@@ -3,7 +3,7 @@ from parking_spot.infrastructure.repositories import ParkingSpotRepository
 from iam.application.services import AuthApplicationService
 
 class ParkingSpotApplicationService:
-    def __init(self):
+    def __init__(self):
         self.parking_spot_repository = ParkingSpotRepository()
         self.parking_spot_service = ParkingSpotService()
         self.iam_service = AuthApplicationService()
