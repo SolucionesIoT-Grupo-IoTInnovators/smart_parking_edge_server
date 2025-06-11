@@ -17,7 +17,7 @@ class DeviceRepository:
     def get_or_create_test_device() -> Optional[Device]:
         from datetime import datetime
         device, created = DeviceModel.get_or_create(
-            device_id = "smart-band-001",
+            device_id = "device-001",
             defaults = {
                 'api_key': 'test-api-key-123',
                 'created_at': datetime.now()
