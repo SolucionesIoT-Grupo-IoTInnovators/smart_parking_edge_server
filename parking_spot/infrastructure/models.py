@@ -1,11 +1,15 @@
-from peewee import Model, AutoField, CharField
+from peewee import Model, AutoField, CharField, IntegerField
 from shared.infrastructure.database import db
 
 class ParkingSpot(Model):
-    id = AutoField()
-    device_id = CharField()
-    mac_address = CharField()
-    state = CharField()
+    spot_id = CharField(primary_key=True)
+    spot_label = CharField()
+    status = CharField()
+    mac_address = CharField(null=True)
+    parking_id = IntegerField()
+    edge_id = CharField()
+    device_type = CharField()
+    last_updated = CharField()
     created_at = CharField()
 
     class Meta:

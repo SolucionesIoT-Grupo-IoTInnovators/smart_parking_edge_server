@@ -1,0 +1,69 @@
+# Archivos y directorios de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Archivos de base de datos SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de configuración y entorno
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.flaskenv
+
+# Archivos de log
+*.log
+logs/
+
+# Archivos de IDE y editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Directorios de pruebas y cobertura
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Documentación generada
+docs/_build/
+site/
+
+# Archivos temporales
+.tmp/
+tmp/
+
+# Archivos específicos del proyecto
+edge_server.db
+*.bak

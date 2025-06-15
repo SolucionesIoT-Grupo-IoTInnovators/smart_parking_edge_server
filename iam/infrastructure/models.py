@@ -1,12 +1,17 @@
-from peewee import Model, CharField, DateTimeField
-
+from peewee import *
 from shared.infrastructure.database import db
+from datetime import datetime
 
-
-class Device(Model):
-    device_id   = CharField(primary_key=True)
-    api_key     = CharField()
-    created_at  = DateTimeField()
+class EdgeServer(Model):
+    edge_id = CharField(primary_key=True)
+    parking_id = IntegerField()
+    name = CharField(null=True)
+    api_key = CharField(null=True)
+    status = CharField(default="ONLINE")
+    ip_address = CharField(null=True)
+    last_sync = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(default=datetime.now)
+    
     class Meta:
-        database    = db
-        table_name  = 'devices'
+        database = db
+        table_name = 'edge_servers'

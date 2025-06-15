@@ -13,5 +13,5 @@ def init_db() -> None:
     if db.is_closed():
         db.connect()
     from parking_spot.infrastructure.models import ParkingSpot
-    from iam.infrastructure.models import Device
-    db.create_tables([ParkingSpot, Device], safe=True)
+    from iam.infrastructure.models import EdgeServer
+    db.create_tables([ParkingSpot, EdgeServer], safe=True)

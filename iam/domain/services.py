@@ -1,6 +1,6 @@
 from typing import Optional
 
-from iam.domain.entities import Device
+from iam.domain.entities import EdgeServer
 
 
 class AuthService:
@@ -8,5 +8,5 @@ class AuthService:
         pass
 
     @staticmethod
-    def authenticate(device: Optional[Device]) -> bool:
-        return device is not None
+    def authenticate(edge_server: Optional[EdgeServer]) -> bool:
+        return edge_server is not None
