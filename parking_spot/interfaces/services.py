@@ -11,7 +11,7 @@ parking_spot_service = ParkingSpotApplicationService()
 
 def create_parking_spot(parking_id, edge_id):
     try:
-        base_url = os.environ.get('CENTRAL_API_UR', 'http://localhost:8081/api/v1')
+        base_url = os.environ.get('CENTRAL_API_URL', 'http://localhost:8081/api/v1')
         response = requests.get(
             f"{base_url}/devices/unassigned/{parking_id}",
             headers=_get_headers()

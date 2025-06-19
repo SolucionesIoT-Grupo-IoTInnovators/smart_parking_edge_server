@@ -34,15 +34,17 @@ class ParkingSpotRepository:
         if not spot:
             raise ValueError("Parking spot not found")
         
-        spot.status = status.value
+        spot.status = status
         spot.last_updated = datetime.now()
         spot.save()
         return ParkingSpot(
             spot_id=spot.spot_id,
             spot_label=spot.spot_label,
-            mac_address=spot.mac_address,
-            edge_id=spot.edge_id,
             status=spot.status,
+            mac_address=spot.mac_address,
+            parking_id=spot.parking_id,
+            edge_id=spot.edge_id,
+            device_type=spot.device_type,
             last_updated=spot.last_updated,
             created_at=spot.created_at
         )
@@ -55,9 +57,27 @@ class ParkingSpotRepository:
         return ParkingSpot(
             spot_id=spot.spot_id,
             spot_label=spot.spot_label,
-            mac_address=spot.mac_address,
             status=spot.status,
+            mac_address=spot.mac_address,
+            parking_id=spot.parking_id,
             edge_id=spot.edge_id,
+            device_type=spot.device_type,
+            last_updated=spot.last_updated,
+            created_at=spot.created_at
+        )
+
+    @staticmethod
+    def get_by_mac(mac_address):
+        mac_address = mac_address.lower()
+        spot = ParkingSpotModel.get(mac_address=mac_address)
+        return ParkingSpot(
+            spot_id=spot.spot_id,
+            spot_label=spot.spot_label,
+            status=spot.status,
+            mac_address=spot.mac_address,
+            parking_id=spot.parking_id,
+            edge_id=spot.edge_id,
+            device_type=spot.device_type,
             last_updated=spot.last_updated,
             created_at=spot.created_at
         )
