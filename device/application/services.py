@@ -1,17 +1,20 @@
+from iam.infrastructure.repositories import EdgeServerRepository
 from parking_spot.infrastructure.repositories import ParkingSpotRepository
 
 
 class DeviceService:
     def __init__(self):
         self.repository = ParkingSpotRepository()
+        self.edgeRepository = EdgeServerRepository
 
     def provision_device(self, mac_address: str):
         spot = self.repository.get_by_mac(mac_address)
+        edge = self.edgeRepository.get_edger_server()
         if spot:
             return {
                 "mac": spot.mac_address.upper(),
                 "status": spot.status,
-                "apiKey": '',
+                "apiKey": edge.api_key,
                 "spotId": spot.spot_id,
                 "label": spot.spot_label,
             }
