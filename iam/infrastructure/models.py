@@ -8,7 +8,7 @@ class EdgeServer(Model):
     name = CharField(null=True)
     api_key = CharField(null=True)
     status = CharField(default="ONLINE")
-    ip_address = CharField(null=True)
+    mac_address = CharField(null=True)
     last_sync = DateTimeField(default=datetime.now)
     created_at = DateTimeField(default=datetime.now)
     

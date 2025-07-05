@@ -9,6 +9,8 @@ from typing import Optional, Callable, Dict, Any
 from dotenv import load_dotenv
 
 from device.application.services import DeviceService
+from iam.application.services import AuthApplicationService
+from parking_spot.application.services import ParkingSpotApplicationService
 
 load_dotenv()
 
@@ -254,25 +256,44 @@ class MQTTClient:
             return False
 
 
-#Instancia global
-mqtt_client = MQTTClient(
+mqtt_client_device = MQTTClient(
     client_id=f"flask_client_{int(time.time())}",
-    host=os.getenv("MQTT_BROKER", "localhost"),
-    port=int(os.getenv("MQTT_PORT")),
-    username=os.getenv("MQTT_USERNAME"),
-    password=os.getenv("MQTT_PASSWORD")
+    host=os.getenv("MQTT_DEVICE_BROKER", "localhost"),
+    port=int(os.getenv("MQTT_DEVICE_PORT")),
+    username=os.getenv("MQTT_DEVICE_USERNAME"),
+    password=os.getenv("MQTT_DEVICE_PASSWORD")
+)
+
+mqtt_client_cloud = MQTTClient(
+    client_id=f"flask_client_cloud_{int(time.time())}",
+    host=os.getenv("MQTT_CLOUD_BROKER", "localhost"),
+    port=int(os.getenv("MQTT_CLOUD_PORT")),
+    username=os.getenv("MQTT_CLOUD_USERNAME"),
+    password=os.getenv("MQTT_CLOUD_PASSWORD")
 )
 
 device_service = DeviceService()
+edge_service = AuthApplicationService()
+parking_service = ParkingSpotApplicationService()
 
+status_topic = os.getenv("MQTT_CLOUD_TOPIC_PARKING")
 def on_device_status_update(topic: str, payload: str):
     try:
         data = json.loads(payload)
         spot_id = data.get("spotId")
+        api_key = data.get("apiKey")
         occupied = data.get("occupied")
-        if spot_id is not None and occupied is not None:
+        if spot_id is not None and occupied is not None and api_key is not None:
+            edge = edge_service.get_edge_server()
             status = "OCCUPIED" if occupied else "AVAILABLE"
             device_service.update_device_status(spot_id, status)
+
+            mqtt_client_cloud.publish(status_topic + edge.edge_id, json.dumps({
+                'spotId': spot_id,
+                'apiKey': api_key,
+                'occupied': occupied
+            }), qos=1)
+
             print(f"Device status updated: spot_id={spot_id}, status={status}")
         else:
             print(f"Invalid data received: {data}")
@@ -292,7 +313,7 @@ def on_device_provisioning_request(topic: str, payload: str):
             response = device_service.provision_device(mac)
             if response:
                 print("Provisioning response:", response)
-                mqtt_client.publish("provisioning/response", json.dumps(response), qos=1)
+                mqtt_client_device.publish("provisioning/response", json.dumps(response), qos=1)
             else:
                 print("No response from provisioning service")
         else:
@@ -301,3 +322,57 @@ def on_device_provisioning_request(topic: str, payload: str):
         print(f"Error parsing JSON in provisioning request: {e}")
     except Exception as e:
         print(f"Error processing provisioning request: {e}")
+
+
+def on_cloud_provisioning_response(topic: str, payload: str):
+    try:
+        data = json.loads(payload)
+        msg_type = data.get("type")
+        if msg_type == "config":
+            parking_id = data.get("parkingId")
+            api_key = data.get("apiKey")
+            server_id = data.get("serverId")
+            edge_name = data.get("edgeName")
+
+            if parking_id and api_key and server_id and edge_name:
+                print(f"Received provisioning response for parkingId={parking_id}, serverId={server_id}")
+                edge_service.get_or_create_test_edge_server(parking_id, edge_name, api_key, server_id)
+                status_subscribe = mqtt_client_cloud.subscribe(status_topic + server_id, callback=on_cloud_status_update)
+                print(f"Subscribed to cloud status updates for serverId={server_id}: {status_subscribe}")
+            else:
+                print("Invalid data in cloud provisioning response:", data)
+        elif msg_type == "devices":
+            devices = data.get("devices", [])
+            if devices:
+                print(f"Received {len(devices)} devices in cloud provisioning response")
+                for device in devices:
+                    print("Processing device:", device)
+                    parking_service.create_parking_spot(device.get("macAddress"),device.get("deviceType"),
+                                                device.get("status"), device.get("spotLabel"),
+                                                device.get("spotId"), device.get("parkingId"), device.get("edgeId"))
+
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON in cloud provisioning response: {e}")
+    except Exception as e:
+        print(f"Error processing cloud provisioning response: {e}")
+
+def on_cloud_status_update(topic: str, payload: str):
+    try:
+        print("Received cloud status update on topic:", topic)
+        data = json.loads(payload)
+        if "reserved" in data:
+            reserved = data["reserved"]
+            spot_id = data["spotId"]
+            api_key = data["apiKey"]
+
+            payload = {
+                'spotId': spot_id,
+                'apiKey': api_key,
+                'reserved': reserved
+            }
+            device_service.update_device_status(spot_id, 'RESERVED' if reserved else 'AVAILABLE')
+            mqtt_client_device.publish(os.getenv("MQTT_DEVICE_TOPIC_RESERVA"), json.dumps(payload), qos=1)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON in cloud status update: {e}")
+    except Exception as e:
+        print(f"Error processing cloud status update: {e}")
