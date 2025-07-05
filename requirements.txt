@@ -4,3 +4,5 @@ peewee==3.18.1
 flasgger==0.9.7.1
 python-dotenv==1.0.0
 requests==2.32.4
+paho-mqtt==1.6.1
+getmac

@@ -20,30 +20,10 @@ def authenticate_request():
     return None
 
 
-def create_edge_server(parking_id):
-    result = auth_service.get_or_create_test_edge_server(parking_id)
+def create_edge_server(parking_id, edge_name, api_key, edge_id):
+    result = auth_service.get_or_create_test_edge_server(parking_id, edge_name, api_key, edge_id)
     if result:
-        base_url = os.environ.get('CENTRAL_API_UR', 'http://localhost:8081/api/v1')
-        payload = {
-            "serverId": result.edge_id,
-            "apiKey": result.api_key,
-            "name": result.name,
-            "ipAddress": result.ip_address,
-            "status": result.status,
-            "parkingId": result.parking_id,
-        }
-        response = requests.post(
-            f"{base_url}/edge-servers",
-            json=payload,
-            headers=_get_headers()
-        )
-        if response.status_code != 201:
-            print(f"Failed to create edge server in backend: {response.text}")
-            return None
-        else:
-            print(f"Edge server created successfully: {response.json()}")
-            return result
-
+        return result
     else:
         return jsonify({"error": "Failed to create edge server"}), 500
 
